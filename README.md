@@ -53,6 +53,10 @@ tizen install -n MytView.wgt -t <tv-serial>   # the serial is the first column o
 `tizen` and `sdb` come with Tizen Studio (`~/tizen-studio/tools/ide/bin` and `~/tizen-studio/tools`);
 add both to your PATH.
 
+**Apple Silicon Macs:** Tizen Studio's command-line tools run on their own bundled x86 Java 8, so
+they need **Rosetta** (`softwareupdate --install-rosetta`). Pointing them at a newer arm64 JDK does
+not work: the tools depend on classes that were removed after Java 8.
+
 ## 4. Sign in
 
 Open MytView on the TV. It shows a QR code: scan it with the MytView phone app (iPhone or Android)
