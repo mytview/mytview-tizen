@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=1920, user-scalable=no, initial-scale=1">
+	<title>MytView</title>
+	<link rel="stylesheet" href="css/app.css">
+	<!-- Classic script → defines the global `qrcode` used by the bundle (js/qr.js). Loads before it. -->
+	<script src="js/vendor/qrcode.js"></script>
+</head>
+<body>
+	<!-- Branded launch, matching every other client (wordmark on brand ink). Inline in the MARKUP on
+	     purpose: it paints before js/app.bundle.js is even fetched or parsed, so it covers the whole
+	     cold start — bundle load, session restore, and the first API round trip. That's the slowest
+	     moment on an old TV, which is exactly where a splash earns its keep. js/app.js removes it once
+	     the first screen is ready. Inline styles so it needs no stylesheet either. -->
+	<div id="splash" style="position:absolute;top:0;right:0;bottom:0;left:0;background:#0E0E10;display:flex;align-items:center;justify-content:center;z-index:100">
+		<img src="wordmark.png" alt="MytView" style="width:60%;max-width:1150px;height:auto">
+	</div>
+	<div id="app"></div>
+	<!-- CLASSIC script, NOT type=module: Tizen 4.0 is ~Chromium 56, which predates ES modules (Cr61).
+	     `npm run build` (build.sh) bundles js/app.js + its imports → js/app.bundle.js via esbuild
+	     (IIFE, target chrome56). One artifact runs on both the 2018 (Cr56) and 2022 (Cr85) sets. -->
+	<script src="js/app.bundle.js"></script>
+</body>
+</html>

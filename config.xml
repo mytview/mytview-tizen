@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Tizen web-app manifest.
+     The application id / package below are REAL, not placeholders (an earlier comment here said
+     otherwise and it was wrong): `mytviewapp.MytView` / `mytviewapp` side-load and run on both the
+     2022 M8 and the 2018 Q7FN, and Samsung's Seller Office pre-test read them back without
+     complaint. The package id does NOT have to match the signing certificate.
+     The one thing that matters: `package` must be exactly 10 characters (a 9-char id fails with the
+     very misleading "[118, -4] Load archive info fail"), and it is PERMANENT once the app is
+     published — so change it before first publish or not at all. -->
+<widget xmlns="http://www.w3.org/ns/widgets" xmlns:tizen="http://tizen.org/ns/widgets"
+        id="http://mytview.com/tv" version="0.1.43" viewmodes="maximized">
+	<tizen:application id="mytviewapp.MytView" package="mytviewapp" required_version="4.0"/>
+	<name>MytView</name>
+	<icon src="icon.png"/>
+	<content src="index.html"/>
+
+	<!-- REQUIRED by Samsung Seller Office. Its pre-test fails the upload with two Critical "Feature"
+	     errors if this is absent ("screen size is not specified" / "feature information is not
+	     available") — privileges alone are not enough, the package must declare features too.
+	     Note it is the plain W3C <feature> element, NOT tizen:feature. Available since Tizen 2.3, so
+	     it does not affect the 4.0 floor that keeps the 2018 sets in range. -->
+	<feature name="http://tizen.org/feature/screen.size.all"/>
+
+	<!-- Network (fetch to the server + broker, and <video> streaming). -->
+	<tizen:privilege name="http://tizen.org/privilege/internet"/>
+	<!-- Register remote media/color keys (arrows + OK + Back are always available without this). -->
+	<tizen:privilege name="http://tizen.org/privilege/tv.inputdevice"/>
+
+	<!-- Allow cross-origin fetch to the broker + the self-hosted server. In the packaged .wgt this
+	     bypasses browser CORS (the server sets no CORS headers — native clients don't need them). -->
+	<access origin="*" subdomains="true"/>
+
+	<tizen:profile name="tv"/>
+	<tizen:setting screen-orientation="landscape" context-menu="disable" background-support="disable"
+	               encryption="disable" install-location="auto" hwkey-event="enable"/>
+</widget>

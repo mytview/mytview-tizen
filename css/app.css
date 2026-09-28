@@ -1,0 +1,276 @@
+/* MytView Tizen — the ink surfaces + amber accent from the web app.css theme, sized for 10-foot. */
+:root {
+	--ink: #0E0E10;
+	--surface: #17171B;
+	--surface-2: #22222a;
+	--text: #EDEDED;
+	--muted: #AAAAAA;
+	--amber: #F5A623;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; overflow: hidden; }
+body {
+	background: #000; /* letterbox around the fixed 1920×1080 stage when the window isn't 16:9 */
+	color: var(--text);
+	font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+	font-size: 28px;
+	-webkit-font-smoothing: antialiased;
+}
+/* Fixed 1920×1080 TV "stage"; app.js scales it to fit the window — scale=1 on a real 1080p TV, shrunk in
+   a desktop browser so the whole UI stays visible. */
+#app {
+	position: absolute; top: 0; left: 0;
+	width: 1920px; height: 1080px;
+	transform-origin: top left;
+	background: var(--ink);
+	overflow: hidden;
+}
+
+.screen { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 80px; }
+/* NO flex `gap` anywhere below — it's Chromium 84, dead on both Tizen sets (Cr56 + Cr85). Single-axis
+   spacing is the sibling-margin idiom (`> * + *`), which is identical on every engine. */
+.center-col { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.center-col > * + * { margin-top: 28px; }
+.row { display: flex; align-items: center; }
+.row > * + * { margin-left: 56px; }
+
+.wordmark { height: 64px; width: auto; display: block; } /* the real brand/masters/wordmark.png, not CSS text */
+
+.title { font-size: 44px; font-weight: 700; }
+.subtitle { font-size: 26px; color: var(--muted); max-width: 820px; line-height: 1.45; }
+.muted { color: var(--muted); font-size: 22px; }
+.error { color: #ff6b6b; font-size: 24px; }
+.code { font-size: 72px; font-weight: 800; color: var(--amber); letter-spacing: 6px; }
+
+.qr { background: #fff; padding: 20px; border-radius: 20px; }
+.qr img { display: block; width: 360px; height: 360px; image-rendering: pixelated; }
+
+/* Focus, not colour, signals emphasis (tvOS parity): the focused control lifts + outlines. */
+.btn {
+	font: inherit; font-size: 26px; color: var(--text);
+	background: var(--surface-2); border: 2px solid transparent; border-radius: 999px;
+	padding: 16px 36px; cursor: pointer; outline: none;
+	transition: transform .12s ease, background .12s ease, border-color .12s ease;
+}
+.btn:focus { transform: scale(1.06); background: #34343e; border-color: #fff; }
+
+.field {
+	font: inherit; font-size: 26px; color: var(--text);
+	background: var(--surface); border: 2px solid #333; border-radius: 14px;
+	padding: 16px 22px; width: 760px; outline: none;
+}
+.field:focus { border-color: #fff; }
+
+.hidden { display: none !important; }
+
+/* ---- browse shell ---- */
+.shell { width: 100%; height: 100%; display: flex; flex-direction: column; }
+/* Centered translucent pill ⇔ the tvOS TabView bar (owner 2026-09-19: the left-aligned bare row read as
+   less prominent than Apple TV's). `align-self` centers it in the column shell; fit-content on Cr56 too. */
+.tabbar { display: flex; align-self: center; width: -webkit-fit-content; width: fit-content; margin: 28px 0 12px; padding: 8px; background: rgba(255,255,255,.08); border-radius: 999px; }
+.tabbar > * + * { margin-left: 8px; }
+.tab { font-size: 30px; font-weight: 600; color: var(--muted); padding: 10px 30px; border-radius: 999px; outline: none; cursor: pointer; }
+.tab.sel { color: var(--text); background: rgba(255,255,255,.14); }
+.tab:focus { color: #000; background: #fff; transform: scale(1.04); }
+.content { flex: 1; overflow-y: auto; padding: 0 64px 64px; }
+.content::-webkit-scrollbar, .page::-webkit-scrollbar { width: 0; height: 0; }
+
+/* ---- grid + cards (image-forward: thumbnail is the focusable tile, label beneath) ---- */
+/* Flexbox grid, NOT CSS Grid: Grid is Chromium 57 and Tizen 4.0 is ~Cr56, where `display:grid` no-ops and
+   every card stacks in one column. And flex `gap` is Cr84 (!), unsupported on BOTH the 2018 Cr56 and 2022
+   Cr85 sets in flex context — so gutters are padding, not gap. `.card` has no background of its own (the
+   `.thumb` inside carries it), so box-sizing padding on the card IS the gutter, and the focus-scale gets
+   breathing room for free. `margin:0 -16px` cancels the outer cards' side padding so the grid stays flush
+   to the page. Cards are `width:25%` + `min-width:0` (⇔ the old minmax(0,1fr)) so a long title ellipsises
+   instead of widening its column. Margins/padding render identically on Cr56 and Cr85 — one layout, both TVs. */
+.grid { display: flex; flex-wrap: wrap; margin: 0 -16px; padding-top: 12px; }
+.grid > .card { width: 25%; box-sizing: border-box; padding: 0 16px 40px; } /* 32px between cols, 40px rows */
+/* Channels are 5-up: a simpler 1:1 image + shorter label reads fine smaller (videos stay 4-up). Same on every client. */
+/* Density ⇔ tvOS (owner 2026-09-19: Tizen's tiles read bigger and more crowded): the same 5-/6-up grids
+   at tvOS's ~288pt / ~240pt tiles, 44px gutters and ~140px side margins — the grid pulls in from the
+   content gutter and the card padding IS the gutter (no flex gap on Cr56). */
+.grid.channels { margin: 0 56px; }
+.grid.channels > .card { width: 20%; padding: 0 22px 40px; }
+/* Movies poster wall (contract §Movies): 2:3 tiles pack denser than 16:9 cards — 6-up. Percentage
+   widths + padding gutters only (flex `gap` is Cr84 — dead on BOTH sets; ⇔ the note above). */
+.grid.movies { margin: 0 56px; }
+.grid.movies > .card { width: 16.666%; padding: 0 22px 40px; }
+/* Genre chip strip + the wall's count/sort bar: ONE row, horizontal overflow scroll (never wrap —
+   a wrapped chip block is a D-pad focus minefield). Margins as gutters (no flex gap on Cr56). */
+.libbar.genres { flex-wrap: nowrap; overflow-x: auto; margin: 0 0 14px; }
+.libbar.genres .libtab { flex: 0 0 auto; }
+.wallbar { justify-content: space-between; margin: 0 0 12px; }
+.grow { flex: 1; } /* pushes Genre/Sort to the right of the count (⇔ tvOS's Spacer) */
+
+/* Picker popup — the genre menu (⇔ tvOS `Menu`). A list, not a chip strip: a library with twenty
+   genres cannot show them in a row at 10 feet. Focus is trapped inside while it's open (nav.setScope),
+   so the arrow keys can't walk out into the grid it covers. Lives INSIDE the scaled #app stage, so it
+   is absolute in stage coordinates — never `fixed` (that would sit outside the scale) and never
+   `inset` (Cr87; dead on both Tizen sets). */
+.menu-scrim { position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: rgba(0,0,0,.55); z-index: 40; }
+.menu-pop {
+  position: absolute; z-index: 41; min-width: 340px; max-width: 640px; max-height: 720px; overflow-y: auto;
+  background: var(--surface); border: 2px solid rgba(255,255,255,.14); border-radius: 16px; padding: 12px 0;
+  box-shadow: 0 24px 64px rgba(0,0,0,.7);
+}
+.menu-item {
+  font-size: 30px; padding: 14px 32px; color: var(--text); outline: none; cursor: pointer; white-space: nowrap;
+}
+.menu-item:focus { background: #fff; color: #000; }
+/* Per-library selector row above the Channels grid (mirrors the web tabs / Apple picker). */
+.libbar { display: flex; margin: 0 0 14px; }
+.libbar > * + * { margin-left: 24px; }
+.libtab { font-size: 26px; padding: 8px 22px; border-radius: 12px; color: var(--muted); outline: none; cursor: pointer; }
+.libtab.active { color: #fff; }
+.libtab:focus { transform: scale(1.06); background: #34343e; color: #fff; }
+.grid.rail { display: flex; flex-wrap: nowrap; overflow-x: auto; margin: 0; }
+.grid.rail .card { width: 340px; flex: 0 0 auto; padding: 0; margin-right: 28px; } /* rail gutter (no flex gap on Cr56) */
+.card { outline: none; cursor: pointer; min-width: 0; } /* allow the card to shrink below its content min */
+/* padding-top ratio box instead of `aspect-ratio` (that needs Chrome 88; Tizen 6.5 = Cr85, where it no-ops
+   and an image-less thumb collapses to 0 height — the channel title then rides to the top of the card). */
+.card .thumb { position: relative; width: 100%; height: 0; padding-top: 56.25%; background: #26262b; border-radius: 12px; overflow: hidden; transition: transform .12s ease, box-shadow .12s ease; }
+.card .thumb.square { padding-top: 100%; } /* 1:1 channel poster */
+.card .thumb.poster { padding-top: 150%; } /* 2:3 series (movie) poster — taller than a channel tile */
+.card .thumb img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.card:focus .thumb { transform: scale(1.05); box-shadow: 0 0 0 4px #fff; }
+.card .resume { position: absolute; left: 0; bottom: 0; height: 5px; background: var(--amber); }
+.card .check { position: absolute; top: 8px; right: 8px; width: 30px; height: 30px; border-radius: 50%; background: #34C759; color: #fff; font-size: 20px; line-height: 30px; text-align: center; }
+.card .dur { position: absolute; right: 8px; bottom: 8px; background: rgba(0,0,0,.78); color: #fff; font-size: 18px; padding: 3px 8px; border-radius: 6px; font-variant-numeric: tabular-nums; }
+.card .unwatched-badge { position: absolute; top: 8px; right: 8px; min-width: 30px; height: 30px; padding: 0 8px; border-radius: 16px; background: #FF3B30; color: #fff; font-size: 18px; line-height: 30px; text-align: center; font-weight: 700; box-sizing: border-box; }
+.card-title { font-size: 22px; margin-top: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-sub { font-size: 18px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---- pushed pages (detail) ---- */
+.page { padding: 72px 80px; height: 100%; overflow-y: auto; }
+.page-head { margin-bottom: 28px; }
+.ch-head { display: flex; justify-content: space-between; align-items: center; }
+.ch-head > * + * { margin-left: 32px; }
+.page-title { font-size: 40px; font-weight: 700; }
+.page-title.small { font-size: 30px; margin: 36px 0 12px; }
+.hero { display: flex; align-items: flex-start; }
+.hero > * + * { margin-left: 56px; }
+/* explicit height (no `aspect-ratio` on Cr85): the stage is a fixed 1920 wide, .page pads 80 each side →
+   hero width 1760; poster = 55% = 968 → 16:9 = 544. */
+.hero-poster { flex: 0 0 55%; height: 544px; background: #26262b; border-radius: 16px; overflow: hidden; }
+.hero-poster img { width: 100%; height: 100%; object-fit: cover; }
+.hero-info { flex: 1; display: flex; flex-direction: column; }
+.hero-info > * + * { margin-top: 16px; }
+.small { font-size: 22px; }
+.desc { margin-top: 28px; font-size: 22px; line-height: 1.5; max-height: 8.5em; overflow: hidden; }
+/* Wrapping row: `> * + *` can't express row+col gaps across wraps, so each chip carries its own right+bottom
+   margin (a trailing right margin on the last-in-row is harmless here). */
+.chips { display: flex; flex-wrap: wrap; margin-top: 24px; }
+.chips > * { margin: 0 16px 16px 0; }
+.chip { font-size: 22px; color: var(--text); background: var(--surface-2); border: 2px solid transparent; border-radius: 999px; padding: 10px 24px; outline: none; cursor: pointer; }
+.chip:focus { transform: scale(1.06); border-color: #fff; background: #34343e; }
+
+/* ---- feed header (show-watched toggle) ---- */
+.btn.small { font-size: 22px; padding: 10px 24px; }
+
+/* ---- search ---- */
+.search-wrap { padding-top: 8px; }
+.search-wrap .field { width: 100%; margin-bottom: 28px; }
+.results { min-height: 200px; }
+
+/* ---- settings ---- */
+.settings { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100%; } /* vertically centered in the content area (below the tab bar) */
+.settings > * + * { margin-top: 32px; }
+.stats { display: flex; }
+.stats > * + * { margin-left: 96px; }
+.stat { display: flex; flex-direction: column; align-items: center; }
+.stat b { font-size: 60px; }
+.stat span { font-size: 22px; color: var(--muted); }
+.setrows { width: 840px; display: flex; flex-direction: column; }
+.setrows > * + * { margin-top: 16px; }
+.setrow { display: flex; justify-content: space-between; font-size: 26px; background: var(--surface-2); border: 2px solid transparent; border-radius: 16px; padding: 20px 28px; outline: none; cursor: pointer; }
+.setrow span:last-child { color: var(--muted); }
+.setrow:focus { transform: scale(1.02); border-color: #fff; background: #34343e; }
+.footer { text-align: center; font-size: 20px; line-height: 1.5; }
+
+/* ---- misc ---- */
+.empty { padding: 120px; text-align: center; font-size: 28px; }
+/* ---- player ---- */
+/* NOTE: `inset` needs Chrome 87 — Tizen 6.5 is Chromium 85, so it silently no-ops and the box shrink-to-fits
+   (portrait video pinned top-left, overlay with no width). Always use explicit top/right/bottom/left here. */
+.player { position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: #000; }
+.player video { width: 100%; height: 100%; object-fit: contain; object-position: center center; background: #000; } /* contain + CENTER (portrait was left-aligning without explicit object-position on Tizen) */
+.pl-overlay { position: absolute; top: 0; right: 0; bottom: 0; left: 0; opacity: 0; transition: opacity .2s; pointer-events: none;
+	background: linear-gradient(to bottom, rgba(0,0,0,.6) 0%, transparent 22%, transparent 68%, rgba(0,0,0,.8) 100%); }
+.pl-overlay.show { opacity: 1; }
+.pl-title { position: absolute; top: 56px; left: 72px; right: 72px; font-size: 40px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Subtitle state line, above the transport bar. Greyed when the video has no tracks — the viewer
+   must be able to tell "none for this video" from "this app has no subtitles". */
+/* Subtitle cue. Painted by us (player.js) because Samsung's engine won't render <track>. Bottom
+   centre with a shadow rather than a box, which is what broadcast captions look like and stays
+   legible over both bright and dark scenes. */
+.pl-cue {
+  position: absolute; left: 10%; right: 10%; bottom: 96px; display: none;
+  text-align: center; font-size: 38px; line-height: 1.3; color: #fff;
+  text-shadow: 0 2px 4px rgba(0,0,0,.95), 0 0 12px rgba(0,0,0,.8);
+  white-space: pre-line; pointer-events: none;
+}
+
+/* Caption appearance — the per-user accessibility pref (Settings). Steps mirror the web player's
+   ::cue percentages (80/115/165%) against this layout's 38px base, so "large" means the same thing
+   on the TV as it does in the browser. */
+[data-cue-size="small"] .pl-cue { font-size: 28px; }
+[data-cue-size="large"] .pl-cue { font-size: 54px; }
+[data-cue-color="yellow"] .pl-cue { color: #ffe14d; } /* the broadcast-caption yellow, as on web */
+
+.pl-audio { position: absolute; left: 72px; right: 72px; bottom: 152px; font-size: 24px; color: #f2a326; }
+.pl-audio.off { display: none; }
+
+.pl-subs { position: absolute; left: 72px; right: 72px; bottom: 118px; font-size: 24px; color: #f2a326; }
+.pl-subs.off { color: #9a9aa8; }
+
+.pl-bottom { position: absolute; left: 72px; right: 72px; bottom: 60px; display: flex; align-items: center; }
+.pl-bottom > * + * { margin-left: 24px; }
+.pl-time { font-size: 26px; font-variant-numeric: tabular-nums; min-width: 120px; }
+.pl-time:last-child { text-align: right; }
+.pl-bar { flex: 1; height: 10px; background: rgba(255,255,255,.45); border-radius: 5px; overflow: hidden; box-shadow: 0 0 0 1px rgba(0,0,0,.5); } /* visible track over bright video (was a faint 25% line) */
+.pl-fill { height: 100%; width: 0; background: var(--amber); }
+.pl-msg { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 30px; background: rgba(0,0,0,.72); padding: 24px 40px; border-radius: 16px; }
+.pl-next { position: absolute; right: 72px; bottom: 150px; max-width: 720px; background: rgba(20,20,24,.94); border: 2px solid #4a4a52; border-radius: 18px; padding: 26px 34px; }
+.pl-next-label { font-size: 22px; color: var(--muted); }
+/* 2-line clamp (⇔ Android/web) — one line ellipsised most real titles into uselessness. Unlike `inset` and
+   `aspect-ratio`, -webkit-line-clamp is ancient WebKit, so it holds on Cr85 and on the 2018 set's Cr56. */
+/* Thumb + text row (⇔ web's end-card). Flex + fixed sizes, no gap/grid — Cr56 rules (see the grid note). */
+.pl-next-row { display: flex; align-items: flex-start; margin: 12px 0; }
+.pl-next-thumb { flex: 0 0 200px; width: 200px; height: 113px; background: #26262b; border-radius: 10px; overflow: hidden; margin-right: 20px; }
+.pl-next-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.pl-next-meta { flex: 1; min-width: 0; }
+.pl-next-title { font-size: 30px; font-weight: 700; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.pl-next-chan { font-size: 22px; color: var(--muted); margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pl-next-sub { font-size: 20px; color: var(--muted); }
+/* Two real buttons (⇔ tvOS/Android): primary + Stop. `margin-left` not flex `gap` (gap is Cr84, dead
+   on both Samsung sets). Reuses .btn/.btn:focus so focus lifts + outlines like everywhere else. */
+.pl-next-btns { display: flex; margin-top: 20px; }
+.pl-next-btns > .btn + .btn { margin-left: 16px; }
+
+/* AVPlay renders the picture in a HARDWARE PLANE behind the browser surface: while the native
+   engine is active (media.js adds .avplay-mode on <html>), everything in the chain above the
+   video area must be TRANSPARENT or the page paints over the picture. The overlay/cue/next
+   elements keep their own backgrounds — they are MEANT to sit on top of the video. */
+.avplay-mode, .avplay-mode body, .avplay-mode #app, .avplay-mode .player { background: transparent !important; }
+.player object[type='application/avplayer'] { width: 100%; height: 100%; }
+
+/* Browse panel (docs/tv-browse-panel-blueprint.md — the tvOS design). Collapsed: a NON-focusable sliver
+   of icons at the stage's left edge, inside .content's 64px gutter, amber when a control differs from
+   its default. Expanded: a left panel over a scrim (the grid dims behind it), the count + the Sort /
+   Genre / Show-watched controls; focus trapped inside while open. Stage coordinates, never `fixed`
+   (see .menu-pop). */
+.g-sliver {
+  position: absolute; left: 12px; top: 220px; bottom: 100px; width: 40px; z-index: 5;
+  display: flex; flex-direction: column; justify-content: center; align-items: center; pointer-events: none;
+}
+.g-sliver span { display: block; margin: 12px 0; }
+.g-sliver svg { width: 32px; height: 32px; fill: none; stroke: rgba(255,255,255,.32); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.g-sliver .on svg { stroke: var(--amber); }
+.g-sliver .eye.on svg circle { fill: var(--amber); }
+.g-panel {
+  position: absolute; top: 0; left: 0; bottom: 0; width: 480px; z-index: 41;
+  background: rgba(23,23,27,.97); padding: 130px 44px 0; box-shadow: 24px 0 64px rgba(0,0,0,.6);
+}
+.g-panel .count { font-size: 34px; color: var(--muted); margin: 0 4px 28px; }
+.g-panel .btn { display: block; width: 100%; text-align: left; margin: 0 0 18px; }

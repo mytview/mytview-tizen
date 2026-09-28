@@ -1,0 +1,12 @@
+{
+  "name": "mytview-tizen",
+  "private": true,
+  "description": "MytView for Samsung TV (Tizen): build-and-sideload source while the Samsung store review is pending",
+  "scripts": {
+    "build": "./build.sh",
+    "package": "./package.sh"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  }
+}
