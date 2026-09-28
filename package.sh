@@ -12,7 +12,8 @@ command -v tizen >/dev/null || { echo "tizen CLI not found: add ~/tizen-studio/t
 ./build.sh                                   # esbuild: js/app.js + imports → js/app.bundle.js
 # Only the bundle and js/vendor/ run on the TV; keep the ES-module sources and repo files out of
 # the package (one -e per pattern: the CLI silently keeps only the last entry of a comma list).
-exargs=(-e "*build.sh" -e "*package.sh" -e "*README.md" -e "*LICENSE" -e "*package.json" -e "*package-lock.json" -e "node_modules")
+# Root FILES need a leading wildcard (*build.sh), root DIRECTORIES a trailing /* (.git/*).
+exargs=(-e "*build.sh" -e "*package.sh" -e "*README.md" -e "*LICENSE" -e "*package.json" -e "*package-lock.json" -e "*.gitignore" -e ".git/*" -e "node_modules/*")
 for f in js/*.js; do [ "$f" = "js/app.bundle.js" ] || exargs+=(-e "$f"); done
 tizen build-web "${exargs[@]}" -- .
 tizen package -t wgt -s "$profile" -- .buildResult
