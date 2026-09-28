@@ -18,6 +18,11 @@ tizen build-web "${exargs[@]}" -- .
 tizen package -t wgt -s "$profile" -- .buildResult
 # A profile the CLI cannot see yields an UNSIGNED package with exit 0, which the TV then rejects
 # with error 118012. Fail here instead.
-unzip -l .buildResult/MytView.wgt 2>/dev/null | grep -q signature1.xml || { echo "package is UNSIGNED: is profile '$profile' in Tizen Studio's Certificate Manager?" >&2; exit 1; }
+# (Capture the listing first: `unzip | grep -q` under pipefail reports failure on every signed package.)
+listing="$(unzip -l .buildResult/MytView.wgt 2>/dev/null || true)"
+case "$listing" in
+  *signature1.xml*) ;;
+  *) echo "package is UNSIGNED: is profile '$profile' in Tizen Studio's Certificate Manager?" >&2; exit 1 ;;
+esac
 cp -f .buildResult/MytView.wgt MytView.wgt
 echo "→ MytView.wgt (signed with profile '$profile'). Install: sdb connect <tv-ip> && tizen install -n MytView.wgt -t <tv-serial>"
