@@ -26,4 +26,4 @@ case "$listing" in
   *) echo "package is UNSIGNED: is profile '$profile' in Tizen Studio's Certificate Manager?" >&2; exit 1 ;;
 esac
 cp -f .buildResult/MytView.wgt MytView.wgt
-echo "→ MytView.wgt (signed with profile '$profile'). Install: sdb connect <tv-ip> && tizen install -n MytView.wgt -t <tv-serial>"
+echo "→ MytView.wgt (signed with profile '$profile'). Install: sdb connect <tv-ip> && tizen install -n MytView.wgt -s <tv-serial>"

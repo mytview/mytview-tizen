@@ -47,7 +47,7 @@ git clone https://github.com/mytview/mytview-tizen.git
 cd mytview-tizen
 npm install                       # esbuild only
 ./package.sh <your-profile-name>  # bundles, stages and signs → MytView.wgt
-tizen install -n MytView.wgt -t <tv-serial>   # the serial is the first column of `sdb devices`
+tizen install -n MytView.wgt -s <tv-serial>   # the serial is the first column of `sdb devices`, e.g. 192.0.2.50:26101
 ```
 
 `tizen` and `sdb` come with Tizen Studio (`~/tizen-studio/tools/ide/bin` and `~/tizen-studio/tools`);
@@ -74,7 +74,8 @@ your server in a browser, and enter the code.
 
 ## Updating
 
-`git pull`, then `./package.sh` and `tizen install` again. The app keeps its sign-in.
+`git pull`, then `./package.sh` and `tizen install` again. Installing over the store or a previous
+sideloaded build works as an update, and the app keeps its sign-in.
 
 ## About this code
 
